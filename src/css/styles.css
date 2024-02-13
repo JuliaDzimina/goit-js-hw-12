@@ -159,9 +159,7 @@ form button:hover{
 }
   
 
-/* .hidden {
-  display: none;
-} */
+
 .load-btn{
   display: flex;
   margin: 40px auto;
@@ -181,4 +179,8 @@ form button:hover{
 
 .load-btn:hover{
   background: #6C8CFF;
-}
+} 
+
+.hidden {
+  display: none;
+} 
