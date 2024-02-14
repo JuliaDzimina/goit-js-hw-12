@@ -102,7 +102,7 @@ async function onLoadMoreClick(){
   }
 
 
-// Fetcj images
+// Fetch images
 async function fetchImages(query){
   const responce = await axios(BASE_URL, {
       params: {
@@ -118,3 +118,4 @@ async function fetchImages(query){
 
 return responce.data;
 };
+
