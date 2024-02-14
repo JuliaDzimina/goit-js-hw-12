@@ -3,68 +3,82 @@ import "izitoast/dist/css/iziToast.min.css";
 
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-
+import axios from 'axios';
 
 import {galleryTemplate} from "./js/render-functions";
-import { fetchImages } from "./js/pixabay-api";
+import { API_KEY, BASE_URL } from "./js/pixabay-api";
+import { hiddenRemove, hiddenAdd } from "./js/classes";
 
 const refs = {
    searchForm: document.querySelector('.search-form'),
    galleryList: document.querySelector('.gallery'),
    loader: document.querySelector('.loader'),
+   btnLodeMore: document.querySelector('.load-btn'),
 }
 
 let lightbox;
-refs.loader.style.display = 'none';
+let page = 1;
+let per_page = 15;
+let searchQuery = '';
 
-
-
-
-
-// async function fetchImages(query){
-//   const API_KEY = '42192199-b3b6ebcf3d1600f471f1bd878';
-//   const BASE_URL = 'https://pixabay.com/api/';
-
-//   const responce = await axios(BASE_URL, {
-//       params: {
-//           key: API_KEY,
-//           q: query,
-//           image_type: 'photo',
-//           orientation: 'horizontal',
-//           safesearch: true,
-//           per_page,
-//           page,
-//       }
-//   });
-
-// return responce.data;
-
-// };
-
+// Submit form
 refs.searchForm.addEventListener('submit', onFormSubmit);
 
 async function onFormSubmit(e) {
     e.preventDefault();
-    refs.loader.style.display = 'block';
+    hiddenRemove(refs.loader);
     refs.galleryList.innerHTML = '';
-
-    const query = e.target.elements.query.value;
+    page = 1;
+    searchQuery = e.target.elements.query.value;
+    
+    
     try{
-      const data = await fetchImages(query);
-    createMarkup(data.hits);
+      const data = await fetchImages(searchQuery);
+      createMarkup(data.hits);
     } catch (error){
+      hiddenAdd(refs.btnLodeMore);
         iziToast.error({
-              message: `Error fetching images: ${error}`,
+              message: `${error}`,
               position: 'topRight',
               backgroundColor: 'red',
-              messageColor: 'white',})
+              messageColor: 'white',});
+           
     } finally{
       refs.searchForm.reset();
-    refs.loader.style.display = 'none';
+      hiddenAdd(refs.loader);
     };
   };
 
 
+
+//Click button "Lode more"
+refs.btnLodeMore.addEventListener('click', onLoadMoreClick);
+
+async function onLoadMoreClick(){
+    page+=1;
+    hiddenRemove(refs.loader);
+  try{
+    const data = await fetchImages(searchQuery);
+    createMarkup(data.hits);
+
+    if (page * per_page > data.totalHits) {
+      hiddenAdd(refs.btnLodeMore);
+      throw new Error('We\'re sorry, but you\'ve reached the end of search results.');
+    }
+  }catch(error){
+    iziToast.error({
+      message: ` ${error}`,
+      position: 'topRight',
+      backgroundColor: 'red',
+      messageColor: 'white',});
+      hiddenAdd(refs.btnLodeMore);
+    }finally{
+      hiddenAdd(refs.loader);
+    }
+}
+  
+
+// Create markup gallary
   function createMarkup(arr){
       if (arr.length === 0){
         iziToast.error({
@@ -72,13 +86,36 @@ async function onFormSubmit(e) {
           position: 'topRight',
           backgroundColor: 'red',
           messageColor: 'white',});
+  
+      } else{
+        const markup =arr.map(galleryTemplate).join('');
+        refs.galleryList.insertAdjacentHTML('beforeend', markup);
+        lightbox = new SimpleLightbox('.gallery a', {
+          captionDelay: 250,
+          captionsData: 'alt',
+        });
+        lightbox.refresh();
+        hiddenRemove(refs.btnLodeMore);
       }
       
-    const markup =arr.map(galleryTemplate).join('');
-    refs.galleryList.insertAdjacentHTML('beforeend', markup);
-    lightbox = new SimpleLightbox('.gallery a', {
-      captionDelay: 250,
-      captionsData: 'alt',
-    });
-    lightbox.refresh();
+    
   }
+
+
+// 
+async function fetchImages(query){
+  const responce = await axios(BASE_URL, {
+      params: {
+          key: API_KEY,
+          q: query,
+          image_type: 'photo',
+          orientation: 'horizontal',
+          safesearch: true,
+          per_page,
+          page,
+      }
+  });
+
+return responce.data;
+
+};
