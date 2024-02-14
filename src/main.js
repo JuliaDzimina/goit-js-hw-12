@@ -1,14 +1,16 @@
+//Import libraries
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
-
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import axios from 'axios';
 
+//Import more data and functions
 import {galleryTemplate} from "./js/render-functions";
 import { API_KEY, BASE_URL } from "./js/pixabay-api";
 import { hiddenRemove, hiddenAdd } from "./js/classes";
 
+//References DOM elements
 const refs = {
    searchForm: document.querySelector('.search-form'),
    galleryList: document.querySelector('.gallery'),
@@ -31,7 +33,6 @@ async function onFormSubmit(e) {
     page = 1;
     searchQuery = e.target.elements.query.value;
     
-    
     try{
       const data = await fetchImages(searchQuery);
       createMarkup(data.hits);
@@ -49,8 +50,6 @@ async function onFormSubmit(e) {
     };
   };
 
-
-
 //Click button "Lode more"
 refs.btnLodeMore.addEventListener('click', onLoadMoreClick);
 
@@ -60,6 +59,10 @@ async function onLoadMoreClick(){
   try{
     const data = await fetchImages(searchQuery);
     createMarkup(data.hits);
+    window.scrollBy({
+      top: 400,
+      behavior: "smooth",
+    });
 
     if (page * per_page > data.totalHits) {
       hiddenAdd(refs.btnLodeMore);
@@ -85,9 +88,8 @@ async function onLoadMoreClick(){
           message: 'Sorry, there are no images matching your search query. Please try again!',
           position: 'topRight',
           backgroundColor: 'red',
-          messageColor: 'white',});
-  
-      } else{
+          messageColor: 'white',})
+      } else {
         const markup =arr.map(galleryTemplate).join('');
         refs.galleryList.insertAdjacentHTML('beforeend', markup);
         lightbox = new SimpleLightbox('.gallery a', {
@@ -96,13 +98,11 @@ async function onLoadMoreClick(){
         });
         lightbox.refresh();
         hiddenRemove(refs.btnLodeMore);
-      }
-      
-    
+      }  
   }
 
 
-// 
+// Fetcj images
 async function fetchImages(query){
   const responce = await axios(BASE_URL, {
       params: {
@@ -117,5 +117,4 @@ async function fetchImages(query){
   });
 
 return responce.data;
-
 };
