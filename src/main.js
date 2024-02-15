@@ -29,6 +29,7 @@ refs.searchForm.addEventListener('submit', onFormSubmit);
 async function onFormSubmit(e) {
     e.preventDefault();
     hiddenRemove(refs.loader);
+    hiddenAdd(refs.btnLodeMore);
     refs.galleryList.innerHTML = '';
     page = 1;
     searchQuery = e.target.elements.query.value;
@@ -88,7 +89,8 @@ async function onLoadMoreClick(){
           message: 'Sorry, there are no images matching your search query. Please try again!',
           position: 'topRight',
           backgroundColor: 'red',
-          messageColor: 'white',})
+          messageColor: 'white',});
+          
       } else {
         const markup =arr.map(galleryTemplate).join('');
         refs.galleryList.insertAdjacentHTML('beforeend', markup);
